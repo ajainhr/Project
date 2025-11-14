@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecurePass - User Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main Application -->
+    <div class="container" id="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <div class="user-name" id="user-name">User</div>
+                <div class="user-role">User</div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-page="dashboard"><i>📊</i> Dashboard</a></li>
+                <li><a href="#" data-page="passwords"><i>🔐</i> My Passwords</a></li>
+                <li><a href="#" data-page="add-password"><i>➕</i> Add Password</a></li>
+                <li><a href="#" data-page="change-password"><i>🔑</i> Change Password</a></li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <button class="btn btn-danger btn-block" id="logout-btn">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard -->
+            <div class="page" id="dashboard-page">
+                <div class="header">
+                    <h1>Dashboard</h1>
+                    <div class="user-actions">
+                        <span class="welcome-message" id="welcome-message">Welcome back, User!</span>
+                        <button class="btn btn-outline btn-sm" id="refresh-btn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Stats</h2>
+                    </div>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon">🔐</div>
+                            <div class="stat-value" id="total-passwords">0</div>
+                            <div class="stat-label">Total Passwords</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-value" id="last-login">Today</div>
+                            <div class="stat-label">Last Login</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">🛡️</div>
+                            <div class="stat-value" id="security-score">0%</div>
+                            <div class="stat-label">Security Score</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Passwords</h2>
+                        <button class="btn btn-sm" id="view-all-btn">
+                            <span>👁️</span> View All
+                        </button>
+                    </div>
+                    
+                    <div class="password-list" id="recent-passwords">
+                        <!-- Recent passwords will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- My Passwords -->
+            <div class="page hidden" id="passwords-page">
+                <div class="header">
+                    <h1>My Passwords</h1>
+                    <button class="btn" id="add-new-btn">
+                        <span>➕</span> Add New Password
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">All Passwords</h2>
+                        <div class="search-box">
+                            <input type="text" id="search-passwords" placeholder="Search passwords...">
+                        </div>
+                    </div>
+                    
+                    <div class="password-list" id="all-passwords">
+                        <!-- All passwords will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add Password -->
+            <div class="page hidden" id="add-password-page">
+                <div class="header">
+                    <h1>Add New Password</h1>
+                    <button class="btn btn-outline" id="back-to-passwords">
+                        <span>⬅️</span> Back to Passwords
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <form id="add-password-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="service-name">Service/Website</label>
+                                <input type="text" id="service-name" placeholder="e.g., Gmail, Facebook" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="account-username">Username/Email</label>
+                                <input type="text" id="account-username" placeholder="Your username or email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-password">Password</label>
+                            <div class="password-field">
+                                <input type="password" id="account-password" placeholder="Enter password" required>
+                                <button type="button" class="toggle-password" data-target="account-password">👁️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password-notes">Notes (Optional)</label>
+                            <textarea id="password-notes" rows="3" placeholder="Any additional information"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success">
+                                <span>💾</span> Save Password
+                            </button>
+                            <button type="button" class="btn btn-outline" id="cancel-add-password">
+                                <span>❌</span> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="page hidden" id="change-password-page">
+                <div class="header">
+                    <h1>Change Password</h1>
+                    <button class="btn btn-outline" id="back-to-dashboard">
+                        <span>⬅️</span> Back to Dashboard
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <form id="change-password-form">
+                        <div class="form-group">
+                            <label for="current-password">Current Password</label>
+                            <input type="password" id="current-password" placeholder="Enter current password" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <input type="password" id="new-password" placeholder="Enter new password" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirm-new-password">Confirm New Password</label>
+                            <input type="password" id="confirm-new-password" placeholder="Confirm new password" required>
+                            <div class="error-message" id="password-match-error">Passwords do not match</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success">
+                                <span>🔑</span> Change Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class UserDashboard {
+            constructor() {
+                this.currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                this.users = JSON.parse(localStorage.getItem('passwordManagerUsers')) || [];
+                this.passwords = JSON.parse(localStorage.getItem('passwordManagerPasswords')) || [];
+                
+                if (!this.currentUser || this.currentUser.role !== 'user') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.updateUI();
+                this.loadDashboard();
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = link.getAttribute('data-page');
+                        this.showPage(page);
+                        
+                        document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+                        link.classList.add('active');
+                    });
+                });
+
+                // Logout
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    localStorage.removeItem('currentUser');
+                    window.location.href = 'index.html';
+                });
+
+                // Add password form
+                document.getElementById('add-password-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addPassword();
+                });
+
+                // Change password form
+                document.getElementById('change-password-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.changePassword();
+                });
+
+                // Back buttons
+                document.getElementById('back-to-passwords').addEventListener('click', () => {
+                    this.showPage('passwords');
+                    document.querySelector('[data-page="passwords"]').classList.add('active');
+                });
+
+                document.getElementById('back-to-dashboard').addEventListener('click', () => {
+                    this.showPage('dashboard');
+                    document.querySelector('[data-page="dashboard"]').classList.add('active');
+                });
+
+                // Other buttons
+                document.getElementById('add-new-btn').addEventListener('click', () => {
+                    this.showPage('add-password');
+                    document.querySelector('[data-page="add-password"]').classList.add('active');
+                });
+
+                document.getElementById('cancel-add-password').addEventListener('click', () => {
+                    this.showPage('passwords');
+                    document.querySelector('[data-page="passwords"]').classList.add('active');
+                });
+
+                document.getElementById('view-all-btn').addEventListener('click', () => {
+                    this.showPage('passwords');
+                    document.querySelector('[data-page="passwords"]').classList.add('active');
+                });
+
+                document.getElementById('refresh-btn').addEventListener('click', () => {
+                    this.loadDashboard();
+                });
+
+                // Search
+                document.getElementById('search-passwords').addEventListener('input', (e) => {
+                    this.filterPasswords(e.target.value);
+                });
+
+                // Password confirmation validation
+                document.getElementById('confirm-new-password').addEventListener('input', () => {
+                    this.validatePasswordConfirmation();
+                });
+
+                // Toggle password visibility
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('toggle-password')) {
+                        this.togglePasswordVisibility(e.target);
+                    }
+                    
+                    if (e.target.classList.contains('action-btn') && e.target.classList.contains('view')) {
+                        this.togglePasswordDisplay(e.target.closest('.password-item'));
+                    }
+                    
+                    if (e.target.classList.contains('action-btn') && e.target.classList.contains('delete')) {
+                        const passwordItem = e.target.closest('.password-item');
+                        this.deletePassword(passwordItem.dataset.id);
+                    }
+                });
+            }
+
+            updateUI() {
+                document.getElementById('user-name').textContent = this.currentUser.username;
+                document.getElementById('user-avatar').textContent = this.currentUser.username.charAt(0).toUpperCase();
+                document.getElementById('welcome-message').textContent = `Welcome back, ${this.currentUser.username}!`;
+            }
+
+            showPage(page) {
+                document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+                document.getElementById(`${page}-page`).classList.remove('hidden');
+
+                if (page === 'dashboard') {
+                    this.loadDashboard();
+                } else if (page === 'passwords') {
+                    this.loadPasswords();
+                }
+            }
+
+            loadDashboard() {
+                const userPasswords = this.passwords.filter(p => p.userId === this.currentUser.id);
+                document.getElementById('total-passwords').textContent = userPasswords.length;
+                document.getElementById('last-login').textContent = this.currentUser.lastLogin || 'Today';
+                
+                const securityScore = userPasswords.length > 0 ? Math.min(100, userPasswords.length * 10) : 0;
+                document.getElementById('security-score').textContent = `${securityScore}%`;
+                
+                this.displayPasswords(userPasswords.slice(-5), 'recent-passwords');
+            }
+
+            loadPasswords() {
+                const userPasswords = this.passwords.filter(p => p.userId === this.currentUser.id);
+                this.displayPasswords(userPasswords, 'all-passwords');
+            }
+
+            displayPasswords(passwords, containerId) {
+                const container = document.getElementById(containerId);
+                
+                if (passwords.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div>🔒</div>
+                            <h3>No passwords saved yet</h3>
+                            <p>Add your first password to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                passwords.forEach(password => {
+                    const passwordEl = document.createElement('div');
+                    passwordEl.className = 'password-item';
+                    passwordEl.dataset.id = password.id;
+                    
+                    passwordEl.innerHTML = `
+                        <div class="password-info">
+                            <h3>${this.escapeHtml(password.service)}</h3>
+                            <p>${this.escapeHtml(password.username)}</p>
+                            <div class="password-value hidden">${this.escapeHtml(password.password)}</div>
+                        </div>
+                        <div class="password-actions">
+                            <button class="action-btn view" title="View Password">👁️</button>
+                            <button class="action-btn delete" title="Delete Password">🗑️</button>
+                        </div>
+                    `;
+                    
+                    container.appendChild(passwordEl);
+                });
+            }
+
+            addPassword() {
+                const service = document.getElementById('service-name').value;
+                const username = document.getElementById('account-username').value;
+                const password = document.getElementById('account-password').value;
+                const notes = document.getElementById('password-notes').value;
+                
+                if (!service || !username || !password) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                const newPassword = {
+                    id: Date.now().toString(),
+                    userId: this.currentUser.id,
+                    service,
+                    username,
+                    password,
+                    notes,
+                    createdAt: new Date().toLocaleString()
+                };
+                
+                this.passwords.push(newPassword);
+                localStorage.setItem('passwordManagerPasswords', JSON.stringify(this.passwords));
+                
+                alert('Password saved successfully!');
+                document.getElementById('add-password-form').reset();
+                this.showPage('passwords');
+            }
+
+            deletePassword(id) {
+                if (confirm('Are you sure you want to delete this password?')) {
+                    this.passwords = this.passwords.filter(p => p.id !== id);
+                    localStorage.setItem('passwordManagerPasswords', JSON.stringify(this.passwords));
+                    
+                    if (document.getElementById('passwords-page').classList.contains('hidden')) {
+                        this.loadDashboard();
+                    } else {
+                        this.loadPasswords();
+                    }
+                }
+            }
+
+            validatePasswordConfirmation() {
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-new-password').value;
+                const errorElement = document.getElementById('password-match-error');
+                
+                if (newPassword !== confirmPassword) {
+                    document.getElementById('confirm-new-password').classList.add('input-error');
+                    errorElement.style.display = 'block';
+                    return false;
+                } else {
+                    document.getElementById('confirm-new-password').classList.remove('input-error');
+                    errorElement.style.display = 'none';
+                    return true;
+                }
+            }
+
+            changePassword() {
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-new-password').value;
+                
+                if (currentPassword !== this.currentUser.password) {
+                    alert('Current password is incorrect!');
+                    return;
+                }
+                
+                if (!this.validatePasswordConfirmation()) {
+                    return;
+                }
+                
+                if (newPassword.length < 4) {
+                    alert('New password must be at least 4 characters long!');
+                    return;
+                }
+                
+                // Update password
+                const userIndex = this.users.findIndex(u => u.id === this.currentUser.id);
+                if (userIndex !== -1) {
+                    this.users[userIndex].password = newPassword;
+                    this.currentUser.password = newPassword;
+                    localStorage.setItem('passwordManagerUsers', JSON.stringify(this.users));
+                    localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                    
+                    alert('Password changed successfully!');
+                    document.getElementById('change-password-form').reset();
+                    this.showPage('dashboard');
+                }
+            }
+
+            togglePasswordVisibility(button) {
+                const targetId = button.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    button.textContent = '🙈';
+                } else {
+                    input.type = 'password';
+                    button.textContent = '👁️';
+                }
+            }
+            
+            togglePasswordDisplay(passwordItem) {
+                const passwordValue = passwordItem.querySelector('.password-value');
+                const viewButton = passwordItem.querySelector('.view');
+                
+                if (passwordValue.classList.contains('hidden')) {
+                    passwordValue.classList.remove('hidden');
+                    viewButton.textContent = '🙈';
+                } else {
+                    passwordValue.classList.add('hidden');
+                    viewButton.textContent = '👁️';
+                }
+            }
+            
+            filterPasswords(query) {
+                const userPasswords = this.passwords.filter(p => p.userId === this.currentUser.id);
+                const filtered = userPasswords.filter(p => 
+                    p.service.toLowerCase().includes(query.toLowerCase()) ||
+                    p.username.toLowerCase().includes(query.toLowerCase()) ||
+                    (p.notes && p.notes.toLowerCase().includes(query.toLowerCase()))
+                );
+                
+                this.displayPasswords(filtered, 'all-passwords');
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new UserDashboard();
+        });
+    </script>
+</body>
+</html>

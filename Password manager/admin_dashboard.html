@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecurePass - Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="user-avatar" id="admin-avatar">A</div>
+                <div class="user-name" id="admin-name">Admin</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-page="user-management"><i>👥</i> User Management</a></li>
+                <li><a href="#" data-page="all-passwords"><i>🔍</i> All Passwords</a></li>
+                <li><a href="#" data-page="system-stats"><i>📊</i> System Stats</a></li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <button class="btn btn-danger btn-block" id="admin-logout-btn">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- User Management -->
+            <div class="page" id="user-management-page">
+                <div class="header">
+                    <h1>User Management</h1>
+                    <button class="btn" id="create-user-btn">
+                        <span>➕</span> Create New User
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Create New User</h2>
+                    </div>
+                    <form id="create-user-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="new-username">Username</label>
+                                <input type="text" id="new-username" placeholder="7-8 characters" required>
+                                <div class="error-message" id="new-username-error">Username must be 7-8 characters</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-email">Email</label>
+                                <input type="email" id="new-email" placeholder="user@example.com" required>
+                                <div class="error-message" id="new-email-error">Valid email required</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Initial Password</label>
+                            <input type="password" id="new-password" placeholder="Set initial password" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <span>👤</span> Create User
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">All Users</h2>
+                        <button class="btn btn-sm" id="refresh-users-btn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Password Count</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- All Passwords -->
+            <div class="page hidden" id="all-passwords-page">
+                <div class="header">
+                    <h1>All User Passwords</h1>
+                    <button class="btn btn-warning" id="export-passwords-btn">
+                        <span>📤</span> Export Data
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Password Overview</h2>
+                        <div class="search-box">
+                            <input type="text" id="search-all-passwords" placeholder="Search all passwords...">
+                        </div>
+                    </div>
+                    
+                    <div class="password-list" id="all-passwords-list">
+                        <!-- All passwords will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Stats -->
+            <div class="page hidden" id="system-stats-page">
+                <div class="header">
+                    <h1>System Statistics</h1>
+                    <button class="btn btn-info" id="refresh-stats-btn">
+                        <span>🔄</span> Refresh Stats
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value" id="total-users-count">0</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">🔐</div>
+                            <div class="stat-value" id="total-passwords-count">0</div>
+                            <div class="stat-label">Total Passwords</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value" id="storage-used">0 KB</div>
+                            <div class="stat-label">Storage Used</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-value" id="last-backup">Never</div>
+                            <div class="stat-label">Last Backup</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdminDashboard {
+            constructor() {
+                this.currentAdmin = JSON.parse(localStorage.getItem('currentAdmin'));
+                this.users = JSON.parse(localStorage.getItem('passwordManagerUsers')) || [];
+                this.passwords = JSON.parse(localStorage.getItem('passwordManagerPasswords')) || [];
+                
+                if (!this.currentAdmin || this.currentAdmin.role !== 'admin') {
+                    window.location.href = 'admin_login.html';
+                    return;
+                }
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.updateAdminUI();
+                this.loadUserManagement();
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = link.getAttribute('data-page');
+                        this.showPage(page);
+                        
+                        document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+                        link.classList.add('active');
+                    });
+                });
+
+                // Logout
+                document.getElementById('admin-logout-btn').addEventListener('click', () => {
+                    localStorage.removeItem('currentAdmin');
+                    window.location.href = 'admin_login.html';
+                });
+
+                // Create user form
+                document.getElementById('create-user-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.createUser();
+                });
+
+                // Refresh users
+                document.getElementById('refresh-users-btn').addEventListener('click', () => {
+                    this.loadUserManagement();
+                });
+
+                // Refresh stats
+                document.getElementById('refresh-stats-btn').addEventListener('click', () => {
+                    this.loadSystemStats();
+                });
+
+                // Export passwords
+                document.getElementById('export-passwords-btn').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                // Search
+                document.getElementById('search-all-passwords').addEventListener('input', (e) => {
+                    this.filterAllPasswords(e.target.value);
+                });
+
+                // Username validation
+                document.getElementById('new-username').addEventListener('input', (e) => {
+                    this.validateNewUsername(e.target);
+                });
+
+                // Email validation
+                document.getElementById('new-email').addEventListener('input', (e) => {
+                    this.validateNewEmail(e.target);
+                });
+            }
+
+            updateAdminUI() {
+                document.getElementById('admin-name').textContent = this.currentAdmin.username;
+                document.getElementById('admin-avatar').textContent = this.currentAdmin.username.charAt(0).toUpperCase();
+            }
+
+            showPage(page) {
+                document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+                document.getElementById(`${page}-page`).classList.remove('hidden');
+
+                if (page === 'user-management') {
+                    this.loadUserManagement();
+                } else if (page === 'all-passwords') {
+                    this.loadAllPasswords();
+                } else if (page === 'system-stats') {
+                    this.loadSystemStats();
+                }
+            }
+
+            validateNewUsername(input) {
+                const value = input.value.trim();
+                const errorElement = document.getElementById('new-username-error');
+                
+                if (value.length < 7 || value.length > 8) {
+                    input.classList.add('input-error');
+                    errorElement.style.display = 'block';
+                    return false;
+                } else {
+                    input.classList.remove('input-error');
+                    errorElement.style.display = 'none';
+                    return true;
+                }
+            }
+
+            validateNewEmail(input) {
+                const value = input.value.trim();
+                const errorElement = document.getElementById('new-email-error');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (!emailRegex.test(value)) {
+                    input.classList.add('input-error');
+                    errorElement.style.display = 'block';
+                    return false;
+                } else {
+                    input.classList.remove('input-error');
+                    errorElement.style.display = 'none';
+                    return true;
+                }
+            }
+
+            createUser() {
+                const username = document.getElementById('new-username').value;
+                const email = document.getElementById('new-email').value;
+                const password = document.getElementById('new-password').value;
+
+                if (!this.validateNewUsername(document.getElementById('new-username')) || 
+                    !this.validateNewEmail(document.getElementById('new-email'))) {
+                    return;
+                }
+
+                if (this.users.find(u => u.username === username)) {
+                    alert('Username already exists!');
+                    return;
+                }
+
+                if (this.users.find(u => u.email === email)) {
+                    alert('Email already registered!');
+                    return;
+                }
+
+                const newUser = {
+                    id: Date.now().toString(),
+                    username,
+                    email,
+                    password,
+                    role: 'user',
+                    createdAt: new Date().toLocaleDateString(),
+                    lastLogin: 'Never'
+                };
+
+                this.users.push(newUser);
+                localStorage.setItem('passwordManagerUsers', JSON.stringify(this.users));
+
+                alert(`User ${username} created successfully!`);
+                document.getElementById('create-user-form').reset();
+                this.loadUserManagement();
+            }
+
+            loadUserManagement() {
+                const usersTable = document.getElementById('users-table-body');
+                usersTable.innerHTML = '';
+
+                this.users.forEach(user => {
+                    if (user.role === 'user') { // Only show regular users, not admins
+                        const userPasswords = this.passwords.filter(p => p.userId === user.id);
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.role}</td>
+                            <td>${userPasswords.length}</td>
+                            <td>${user.lastLogin}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm delete-user" data-id="${user.id}">Delete</button>
+                                <button class="btn btn-warning btn-sm reset-password" data-id="${user.id}">Reset Password</button>
+                            </td>
+                        `;
+                        
+                        usersTable.appendChild(row);
+                    }
+                });
+
+                // Add event listeners
+                document.querySelectorAll('.delete-user').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = e.target.getAttribute('data-id');
+                        this.deleteUser(userId);
+                    });
+                });
+
+                document.querySelectorAll('.reset-password').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = e.target.getAttribute('data-id');
+                        this.resetUserPassword(userId);
+                    });
+                });
+            }
+
+            deleteUser(userId) {
+                const user = this.users.find(u => u.id === userId);
+                if (!user) return;
+
+                if (confirm(`Are you sure you want to delete user ${user.username}? All their passwords will be deleted.`)) {
+                    // Delete user
+                    this.users = this.users.filter(u => u.id !== userId);
+                    localStorage.setItem('passwordManagerUsers', JSON.stringify(this.users));
+
+                    // Delete user's passwords
+                    this.passwords = this.passwords.filter(p => p.userId !== userId);
+                    localStorage.setItem('passwordManagerPasswords', JSON.stringify(this.passwords));
+
+                    this.loadUserManagement();
+                    this.loadSystemStats();
+                }
+            }
+
+            resetUserPassword(userId) {
+                const user = this.users.find(u => u.id === userId);
+                if (!user) return;
+
+                const newPassword = prompt(`Enter new password for ${user.username}:`, 'newpassword123');
+                if (newPassword && newPassword.length >= 4) {
+                    user.password = newPassword;
+                    localStorage.setItem('passwordManagerUsers', JSON.stringify(this.users));
+                    alert(`Password reset successfully for ${user.username}`);
+                }
+            }
+
+            loadAllPasswords() {
+                this.displayAllPasswords(this.passwords);
+            }
+
+            displayAllPasswords(passwords) {
+                const container = document.getElementById('all-passwords-list');
+                
+                if (passwords.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div>🔒</div>
+                            <h3>No passwords stored yet</h3>
+                            <p>Users haven't added any passwords</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                passwords.forEach(password => {
+                    const owner = this.users.find(u => u.id === password.userId);
+                    const passwordEl = document.createElement('div');
+                    passwordEl.className = 'password-item';
+                    passwordEl.innerHTML = `
+                        <div class="password-info">
+                            <h3>${this.escapeHtml(password.service)} 
+                                <span class="user-badge">👤 ${owner ? owner.username : 'Unknown'}</span>
+                            </h3>
+                            <p>${this.escapeHtml(password.username)}</p>
+                            <div class="password-value">${this.escapeHtml(password.password)}</div>
+                        </div>
+                        <div class="password-actions">
+                            <button class="action-btn delete" data-id="${password.id}" title="Delete Password">🗑️</button>
+                        </div>
+                    `;
+                    container.appendChild(passwordEl);
+                });
+
+                // Add delete event listeners
+                document.querySelectorAll('.password-actions .delete').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const passwordId = e.target.getAttribute('data-id');
+                        this.deletePassword(passwordId);
+                    });
+                });
+            }
+
+            deletePassword(passwordId) {
+                if (confirm('Are you sure you want to delete this password?')) {
+                    this.passwords = this.passwords.filter(p => p.id !== passwordId);
+                    localStorage.setItem('passwordManagerPasswords', JSON.stringify(this.passwords));
+                    this.loadAllPasswords();
+                }
+            }
+
+            filterAllPasswords(query) {
+                const filtered = this.passwords.filter(p => 
+                    p.service.toLowerCase().includes(query.toLowerCase()) ||
+                    p.username.toLowerCase().includes(query.toLowerCase())
+                );
+                this.displayAllPasswords(filtered);
+            }
+
+            loadSystemStats() {
+                document.getElementById('total-users-count').textContent = this.users.filter(u => u.role === 'user').length;
+                document.getElementById('total-passwords-count').textContent = this.passwords.length;
+                
+                const dataSize = new Blob([JSON.stringify(this.passwords)]).size + 
+                                new Blob([JSON.stringify(this.users)]).size;
+                document.getElementById('storage-used').textContent = `${(dataSize / 1024).toFixed(2)} KB`;
+                
+                const lastBackup = localStorage.getItem('lastBackup');
+                document.getElementById('last-backup').textContent = lastBackup || 'Never';
+            }
+
+            exportData() {
+                const data = JSON.stringify({
+                    users: this.users.filter(u => u.role === 'user'),
+                    passwords: this.passwords
+                }, null, 2);
+
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `securepass-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                localStorage.setItem('lastBackup', new Date().toLocaleString());
+                this.loadSystemStats();
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminDashboard();
+        });
+    </script>
+</body>
+</html>

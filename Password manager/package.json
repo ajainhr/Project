@@ -1,0 +1,13 @@
+{
+  "name": "securepass-password-manager",
+  "version": "1.0.0",
+  "description": "A secure password manager with admin and user roles",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^4.4.0"
+  }
+}

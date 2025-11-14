@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecurePass - Admin Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Admin Login Screen -->
+    <div class="login-container" id="admin-login-screen">
+        <div class="app-logo">🔒</div>
+        <h1 class="app-title">Admin Login</h1>
+        <p class="app-subtitle">SecurePass Administration</p>
+        
+        <form id="admin-login-form">
+            <div class="form-group">
+                <label for="admin-username">Username</label>
+                <input type="text" id="admin-username" placeholder="Enter admin username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password" placeholder="Enter admin password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-block">
+                <span>🔑</span> Admin Login
+            </button>
+        </form>
+        
+        <p style="margin-top: 20px;">
+            <a href="index.html" class="link">User Login</a>
+        </p>
+    </div>
+
+    <script>
+        class AdminAuth {
+            constructor() {
+                this.users = JSON.parse(localStorage.getItem('passwordManagerUsers')) || [];
+                this.setupDefaultAdmin();
+                this.setupEventListeners();
+            }
+
+            setupDefaultAdmin() {
+                if (this.users.length === 0) {
+                    const defaultAdmin = {
+                        id: '1',
+                        username: 'admin123',
+                        email: 'hritik@gmail.com',
+                        password: 'admin123',
+                        role: 'admin',
+                        createdAt: new Date().toLocaleDateString(),
+                        lastLogin: new Date().toLocaleString()
+                    };
+                    this.users.push(defaultAdmin);
+                    localStorage.setItem('passwordManagerUsers', JSON.stringify(this.users));
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.adminLogin();
+                });
+            }
+
+            adminLogin() {
+                const username = document.getElementById('admin-username').value;
+                const password = document.getElementById('admin-password').value;
+
+                const admin = this.users.find(u => u.username === username && u.password === password && u.role === 'admin');
+
+                if (admin) {
+                    // Update last login
+                    admin.lastLogin = new Date().toLocaleString();
+                    localStorage.setItem('passwordManagerUsers', JSON.stringify(this.users));
+                    
+                    localStorage.setItem('currentAdmin', JSON.stringify(admin));
+                    window.location.href = 'admin_dashboard.html';
+                } else {
+                    alert('Invalid admin credentials!');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminAuth();
+        });
+    </script>
+</body>
+</html>
